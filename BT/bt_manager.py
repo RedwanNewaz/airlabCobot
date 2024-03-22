@@ -2,7 +2,7 @@ import py_trees.console as console
 import py_trees
 from .bt_cam import Camera
 from .bt_viewer import Viewer
-from .bt_calibrator import Calibrator
+from .bt_calibrator import CalibratorCheckBox, Calibrator
 from .bt_detector import Detector
 from .bt_pose_estimator import PoseEstimator
 from threading import Thread
@@ -12,16 +12,22 @@ class NodeManager(Thread):
         Thread.__init__(self)
         cam = Camera()
         viewer = Viewer(cam, ax, window)
+        checkbox = CalibratorCheckBox(window)
         calibrator = Calibrator(window)
+
+        seq_calibrator = py_trees.composites.Sequence(name="seq_calibrator", memory=True)
+        seq_calibrator.add_children([checkbox, calibrator])
 
         detector = Detector(cam, model_path)
         pose_estimator = PoseEstimator(cam, detector)
 
         seq_camera = py_trees.composites.Sequence(name="seq_camera", memory=True)
-        seq_camera.add_children([cam, viewer, calibrator])
+        seq_camera.add_children([cam, viewer, seq_calibrator])
 
         seq_detector = py_trees.composites.Sequence(name="seq_detector", memory=True)
         seq_detector.add_children([detector, pose_estimator])
+
+
 
 
         root = py_trees.composites.Parallel(

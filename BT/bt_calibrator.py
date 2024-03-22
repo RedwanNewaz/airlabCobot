@@ -2,6 +2,17 @@ import py_trees
 import py_trees.console as console
 import numpy as np
 import cv2
+from py_trees import common
+
+
+class CalibratorCheckBox(py_trees.behaviour.Behaviour):
+    def __init__(self, window):
+        self.window = window
+        super().__init__("CalibratorCheckBox")
+
+    def update(self) -> common.Status:
+        return self.status.SUCCESS if self.window.checkBox.isChecked() else self.status.FAILURE
+
 
 class Calibrator(py_trees.behaviour.Behaviour):
     def __init__(self, window):
@@ -20,6 +31,9 @@ class Calibrator(py_trees.behaviour.Behaviour):
 
     def update(self):
         for msg in self.check_realsense_coord():
-            self.logger.info(",".join(msg))
+            line = ",".join(msg)
+            self.logger.info(line)
+            if self.window.comboBox.currentText() in line:
+                self.window.calibrationLine.put(line)
 
         return self.status.SUCCESS

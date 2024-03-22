@@ -3,8 +3,12 @@ import sys
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
 from PyQt6 import uic
+from PyQt6.QtCore import QTimer
 from pymycobot.mycobot import MyCobot
 from BT import NodeManager
+from queue import Queue
+from copy import deepcopy
+
 
 class MainWindow(QMainWindow):
     def __init__(self, fig):
@@ -22,8 +26,27 @@ class MainWindow(QMainWindow):
 
         self.moveButton.clicked.connect(self.onMoveButtonClicked)
         self.resetButton.clicked.connect(self.onResetButtonClicked)
+        self.writeButton.clicked.connect(self.onWriteButtonClicked)
 
         self.mycobot = MyCobot('/dev/ttyACM1')
+        self.calibrationLine = Queue()
+        self.objNames = set()
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.showTime)
+        self.timer.start(100)
+
+    def showTime(self):
+        # update calibration box
+        if self.checkBox.isChecked():
+            while not self.calibrationLine.empty():
+                text = self.calibrationLine.get()
+                self.calibrationText.setPlainText(text)
+
+    def onWriteButtonClicked(self):
+        text = self.calibrationText.toPlainText().strip()
+        with open('calibration/calibrations.txt', 'a+') as f:
+            f.write(text + "\n")
 
     def onResetButtonClicked(self):
         angles = [0, 0, 0, 0, 0, 0]
@@ -31,7 +54,6 @@ class MainWindow(QMainWindow):
         self.mycobot.send_angles(angles, 70)
 
     def onMoveButtonClicked(self):
-
         # read from textbox
         inputText = self.input.text()
 
@@ -57,6 +79,15 @@ class MainWindow(QMainWindow):
             for j, cell in enumerate(row):
                 item = QTableWidgetItem(str(cell))
                 self.tableWidget.setItem(i, j, item)
+
+                # update combo box
+                if j == 0:
+                    name = data[i][j]
+                    if name not in self.objNames:
+                        self.objNames.add(name)
+                        self.comboBox.addItem(name)
+
+
 
 
 
