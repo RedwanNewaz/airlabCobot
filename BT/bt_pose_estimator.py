@@ -29,8 +29,8 @@ class PoseEstimator(py_trees.behaviour.Behaviour):
                 world_coordinates = self.transform_to_world_coordinates(int((b[0] + b[2]) / 2), int((b[1] + b[3]) / 2),
                                                                         pixel_distance, depth_intrin)
                 world_coordinates_mm = [1000 * world_coordinates[0], 1000 * world_coordinates[1], 1000 * world_coordinates[2]]
-                self.logger.info(f"{objName} world coordinate ({ world_coordinates_mm}) mm")
-                msg += f"{objName},{world_coordinates_mm[0]},{world_coordinates_mm[1]},{world_coordinates_mm[2]}\n"
+                # self.logger.info(f"{objName} world coordinate ({ world_coordinates_mm}) mm")
+                msg += f"{objName},{world_coordinates_mm[0]:.2f},{world_coordinates_mm[1]:.2f},{world_coordinates_mm[2]:.2f}\n"
         self.pub.set("/%s/state" % self.name, msg)
         self.detector.detections.clear()
         return self.status.SUCCESS

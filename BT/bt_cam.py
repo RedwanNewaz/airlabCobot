@@ -2,7 +2,7 @@ import py_trees
 import py_trees.console as console
 import pyrealsense2 as rs
 import numpy as np
-import cv2
+
 
 
 class Camera(py_trees.behaviour.Behaviour):
@@ -24,13 +24,10 @@ class Camera(py_trees.behaviour.Behaviour):
 
     def update(self):
         frames = self.pipeline.wait_for_frames()
-
         aligned_frames = self.align.process(frames)
         color_frame = aligned_frames.get_color_frame()
         self.depth_frame = aligned_frames.get_depth_frame()
         if color_frame:
-            #TODO communicate
-
             self.color_image = np.asanyarray(color_frame.get_data())
             self.depth_image = np.asanyarray(self.depth_frame.get_data())
             return self.status.SUCCESS

@@ -9,7 +9,8 @@ from BT import NodeManager
 class MainWindow(QMainWindow):
     def __init__(self, fig):
         super().__init__()
-        uic.loadUi('cobot.ui', self)
+        uic.loadUi('cobot3.ui', self)
+
 
         self.setLayout(self.viewer)
 
