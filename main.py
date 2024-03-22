@@ -7,13 +7,14 @@ from PyQt6.QtCore import QTimer
 from pymycobot.mycobot import MyCobot
 from BT import NodeManager
 from queue import Queue
-from copy import deepcopy
+
 
 
 class MainWindow(QMainWindow):
     def __init__(self, fig):
         super().__init__()
         uic.loadUi('cobot3.ui', self)
+        self.setWindowTitle("AiR L@b Cobot")
 
 
         self.setLayout(self.viewer)
@@ -56,6 +57,9 @@ class MainWindow(QMainWindow):
     def onMoveButtonClicked(self):
         # read from textbox
         inputText = self.input.text()
+        if ',' not in inputText:
+            print('[-] invalid input!')
+            return
 
         cmd = list(map(float, inputText.strip().split(',')))
         if len(cmd) >= 2:

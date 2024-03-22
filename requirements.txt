@@ -5,3 +5,4 @@ ultralytics
 PyQt6
 matplotlib
 pymycobot
+scipy
