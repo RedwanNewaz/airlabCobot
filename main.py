@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         self.resetButton.clicked.connect(self.onResetButtonClicked)
         self.writeButton.clicked.connect(self.onWriteButtonClicked)
 
-        self.mycobot = MyCobot('/dev/ttyACM1')
+        self.mycobot = MyCobot('/dev/ttyACM0')
         self.calibrationLine = Queue()
         self.objNames = set()
 

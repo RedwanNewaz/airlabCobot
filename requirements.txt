@@ -6,3 +6,4 @@ PyQt6
 matplotlib
 pymycobot
 scipy
+chardet
