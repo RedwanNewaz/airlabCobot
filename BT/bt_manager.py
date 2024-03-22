@@ -3,6 +3,7 @@ import py_trees
 from .bt_cam import Camera
 from .bt_viewer import Viewer
 from .bt_calibrator import CalibratorCheckBox, Calibrator
+from .bt_tracking import TrackingCheckBox, Tracking
 from .bt_detector import Detector
 from .bt_pose_estimator import PoseEstimator
 from threading import Thread
@@ -18,11 +19,19 @@ class NodeManager(Thread):
         seq_calibrator = py_trees.composites.Sequence(name="seq_calibrator", memory=True)
         seq_calibrator.add_children([checkbox, calibrator])
 
+        trackingCheckbox = TrackingCheckBox(window)
+        tracking = Tracking(window)
+        seq_tracking = py_trees.composites.Sequence(name="seq_tracking", memory=True)
+        seq_tracking.add_children([trackingCheckbox, tracking])
+
+        selector_calibrator = py_trees.composites.Selector(name="selector_calibrator", memory=True)
+        selector_calibrator.add_children([seq_tracking, seq_calibrator])
+
         detector = Detector(cam, model_path)
         pose_estimator = PoseEstimator(cam, detector)
 
         seq_camera = py_trees.composites.Sequence(name="seq_camera", memory=True)
-        seq_camera.add_children([cam, viewer, seq_calibrator])
+        seq_camera.add_children([cam, viewer, selector_calibrator])
 
         seq_detector = py_trees.composites.Sequence(name="seq_detector", memory=True)
         seq_detector.add_children([detector, pose_estimator])

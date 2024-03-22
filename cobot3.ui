@@ -36,6 +36,22 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
+      <widget class="QPushButton" name="dockingButton">
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
+       <property name="text">
+        <string>Docking</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="resetButton">
        <property name="maximumSize">
         <size>
@@ -68,6 +84,13 @@
        </property>
        <property name="text">
         <string>Move</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="trackingBox">
+       <property name="text">
+        <string>Tracking</string>
        </property>
       </widget>
      </item>

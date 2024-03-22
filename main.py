@@ -7,6 +7,7 @@ from PyQt6.QtCore import QTimer
 from pymycobot.mycobot import MyCobot
 from BT import NodeManager
 from queue import Queue
+import time
 
 
 
@@ -28,6 +29,7 @@ class MainWindow(QMainWindow):
         self.moveButton.clicked.connect(self.onMoveButtonClicked)
         self.resetButton.clicked.connect(self.onResetButtonClicked)
         self.writeButton.clicked.connect(self.onWriteButtonClicked)
+        self.dockingButton.clicked.connect(self.onDockButtonClicked)
 
         self.mycobot = MyCobot('/dev/ttyACM0')
         self.calibrationLine = Queue()
@@ -65,6 +67,14 @@ class MainWindow(QMainWindow):
         if len(cmd) >= 2:
             print(f'[+] move to {cmd}')
             self.move(cmd)
+
+    def onDockButtonClicked(self):
+        reset = [153.19, 137.81, -153.54, 156.79, 87.27, 13.62]
+        print("::set_free_mode()\n")
+        self.mycobot.send_angles(reset, 100)
+        time.sleep(5)
+        self.mycobot.release_all_servos()
+        print("docking success ...\n")
 
 
 
