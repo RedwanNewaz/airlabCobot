@@ -1,0 +1,7 @@
+pyrealsense2
+py-trees
+numpy
+ultralytics
+PyQt6
+matplotlib
+pymycobot
