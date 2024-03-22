@@ -71,8 +71,8 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     window = MainWindow(fig)
-
-    sense = NodeManager(ax, window)
+    model_path = "/home/airlab/Downloads/yolov8_realsense/yolov8_rs/yolov8m.pt"
+    sense = NodeManager(ax, window, model_path)
     sense.start()
 
     window.show()
