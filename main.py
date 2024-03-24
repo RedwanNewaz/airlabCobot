@@ -30,6 +30,7 @@ class MainWindow(QMainWindow):
         self.writeButton.clicked.connect(self.onWriteButtonClicked)
         self.calibrateButton.clicked.connect(self.onCalibrateButtonClicked)
         # self.dockingButton.clicked.connect(self.onDockButtonClicked)
+        self.actionload_calibration.triggered.connect(self.onLoadCalibrationActionClick)
 
 
         self.calibrationLine = Queue()
@@ -38,6 +39,15 @@ class MainWindow(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.showTime)
         self.timer.start(100)
+
+    def onLoadCalibrationActionClick(self):
+        print('load action calibration triggered')
+        rawData = np.loadtxt(f'calibration.csv', delimiter=',').astype('str')
+        cobot_data = [",".join(r) for r in rawData[:, :2]]
+        realsense_data = [",".join(r) for r in rawData[:, 2:]]
+        combo = list(zip(cobot_data, realsense_data))
+        header = ['cobot', 'realsense']
+        self.populate_table(combo, header)
 
     def point_transformation(self, point, origin):
         x = (point - origin)
@@ -72,6 +82,7 @@ class MainWindow(QMainWindow):
                 item = self.tableWidget.item(row, column)
                 data = list(map(float, item.text().split(',')))
                 # print(row, column, data)
+                # where data = [x, y]
                 calibrationData[row][column] = data
 
         # seprate data files
@@ -123,12 +134,13 @@ class MainWindow(QMainWindow):
         #     "458.48, -423.85"
         # ]
 
-        rawData = np.loadtxt(f'calibration.csv', delimiter=',').astype('str')
-        cobot_data = [ ",".join(r) for r in rawData[:, :2]]
-        realsense_data = [ ",".join(r) for r in rawData[:, 2:]]
-        combo = list(zip(cobot_data, realsense_data))
-        header = ['cobot', 'realsense']
-        self.populate_table(combo, header)
+        # rawData = np.loadtxt(f'calibration.csv', delimiter=',').astype('str')
+        # cobot_data = [ ",".join(r) for r in rawData[:, :2]]
+        # realsense_data = [ ",".join(r) for r in rawData[:, 2:]]
+        # combo = list(zip(cobot_data, realsense_data))
+        # header = ['cobot', 'realsense']
+        # self.populate_table(combo, header)
+        pass
     def showTime(self):
         pass
 
