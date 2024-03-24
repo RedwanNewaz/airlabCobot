@@ -1,6 +1,8 @@
 import py_trees
 import numpy as np
 import py_trees.console as console
+from py_trees import common
+
 
 class WriteCalibration(py_trees.behaviour.Behaviour):
     def __init__(self, table, msgbox):
@@ -16,7 +18,11 @@ class WriteCalibration(py_trees.behaviour.Behaviour):
         # save calibration data
         camCalibrationData = np.hstack((cobot, realsense))
         np.savetxt('calibration.csv', camCalibrationData, delimiter=',', fmt='%0.3f')
+        self.clicked = False
+
+        # show debug message
         msg = f"[+] saved in calibration.csv"
         self.msgbox.setPlainText(msg)
-        self.clicked = False
+        self.logger.info(msg)
         return self.status.SUCCESS
+

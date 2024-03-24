@@ -39,16 +39,13 @@ class Calibrator(py_trees.behaviour.Behaviour):
         cobot, realsense = self.table.cobot, self.table.realsense
 
         # compute optimal transformation
-        origin = self.computeOptimalTransformation(realsense, cobot)
+        self.origin = self.computeOptimalTransformation(realsense, cobot)
 
         transformedData = realsense.copy()
         for i, p in enumerate(transformedData):
-            transformedData[i] = self.point_transformation(p, origin)
+            transformedData[i] = self.point_transformation(p, self.origin)
 
-        # show it to text box
-        msg = f"x = {origin[0]:.3f}, y = {origin[1]:.3f}"
-        self.logger.info(msg)
-        self.msgbox.setPlainText(msg)
+
 
         # plot them
         self.ax.fill(cobot[:, 0], cobot[:, 1], 'y', alpha=0.4)
@@ -58,4 +55,10 @@ class Calibrator(py_trees.behaviour.Behaviour):
         self.ax.legend(['cobot', 'realsense', 'transformed'])
         self.canvas.draw()
         self.clicked = False
+        # show it to text box
+        msg = f"x = {self.origin[0]:.3f}, y = {self.origin[1]:.3f}"
+        self.logger.info(msg)
+        self.msgbox.setPlainText(msg)
+
         return self.status.SUCCESS
+

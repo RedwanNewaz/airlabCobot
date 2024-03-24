@@ -10,7 +10,7 @@ from queue import Queue
 import time
 import numpy as np
 import py_trees
-from calibration import Calibrator, ReadTableData, WriteCalibration
+from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable
 
 class MainWindow(QMainWindow):
     def __init__(self, fig, ax):
@@ -43,30 +43,25 @@ class MainWindow(QMainWindow):
         self.timer.start(100)
 
         # design Bt
-        table = ReadTableData(self.tableWidget, self.checkBox.isChecked)
-        self.calib = Calibrator(ax, self.canvas, table, self.calibrationText)
-        self.writer = WriteCalibration(table, self.calibrationText)
+        readTable = ReadTableData(self.tableWidget, self.checkBox.isChecked)
+        self.loadTable = LoadTable(self.tableWidget)
+        self.calib = Calibrator(ax, self.canvas, readTable, self.calibrationText)
+        self.writer = WriteCalibration(readTable, self.calibrationText)
+
 
         sel_calibrator = py_trees.composites.Selector(name="sel_calibrator", memory=True)
         sel_calibrator.add_children([self.calib, self.writer])
 
-
         seq_calibrator = py_trees.composites.Sequence(name="seq_calibrator", memory=True)
-        seq_calibrator.add_children([table, sel_calibrator])
+        seq_calibrator.add_children([readTable, sel_calibrator])
 
-        self.root = py_trees.composites.Sequence("Sequence", True)
-        self.root.add_children([seq_calibrator])
+        self.root = py_trees.composites.Selector("RootSelector", True)
+        self.root.add_children([self.loadTable, seq_calibrator])
+
 
     def onLoadCalibrationActionClick(self):
-        print('load action calibration triggered')
-        rawData = np.loadtxt(f'calibration.csv', delimiter=',').astype('str')
-        cobot_data = [",".join(r) for r in rawData[:, :2]]
-        realsense_data = [",".join(r) for r in rawData[:, 2:]]
-        combo = list(zip(cobot_data, realsense_data))
-        header = ['cobot', 'realsense']
-        self.populate_table(combo, header)
-
-
+        self.loadTable.clicked = True
+        self.root.tick_once()
 
     def onCalibrateButtonClicked(self):
         self.calib.clicked = True
@@ -81,23 +76,7 @@ class MainWindow(QMainWindow):
     def showTime(self):
         pass
 
-    def populate_table(self, data, header):
-        # Set the table dimensions and headers
-        self.tableWidget.setRowCount(len(data))  # Set number of rows
-        self.tableWidget.setColumnCount(len(header))  # Set number of columns
-        self.tableWidget.setHorizontalHeaderLabels(header)  # Set column headers
 
-        for i, row in enumerate(data):
-            for j, cell in enumerate(row):
-                item = QTableWidgetItem(str(cell))
-                self.tableWidget.setItem(i, j, item)
-
-                # # update combo box
-                # if j == 0:
-                #     name = data[i][j]
-                #     if name not in self.objNames:
-                #         self.objNames.add(name)
-                #         self.comboBox.addItem(name)
 
 
 if __name__ == '__main__':
