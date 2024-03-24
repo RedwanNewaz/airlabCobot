@@ -2,13 +2,18 @@ import py_trees
 import py_trees.console as console
 import numpy as np
 from py_trees import common
-from scipy.optimize import least_squares
+
 class ReadTableData(py_trees.behaviour.Behaviour):
-    def __init__(self, tableWidget):
+    def __init__(self, tableWidget, enabled):
         self.tableWidget = tableWidget
+        self.enabled = enabled
         super(ReadTableData, self).__init__('ReadTableData')
 
     def update(self) -> common.Status:
+        if not self.enabled():
+            self.logger.error('[!] Calibration is not enabled')
+            return self.status.FAILURE
+
         rowCount = self.tableWidget.rowCount()
         columnCount = self.tableWidget.columnCount()
 

@@ -19,7 +19,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("AiR L@b Cobot")
         self.ax = ax
 
-        self.setLayout(self.viewer)
+        # self.setLayout(self.viewer)
 
         self.canvas = FigureCanvasQTAgg(fig)
         self.viewer.addWidget(self.canvas)
@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
         self.timer.start(100)
 
         # design Bt
-        table = ReadTableData(self.tableWidget)
+        table = ReadTableData(self.tableWidget, self.checkBox.isChecked)
         self.calib = Calibrator(ax, self.canvas, table, self.calibrationText)
         self.writer = WriteCalibration(table, self.calibrationText)
 

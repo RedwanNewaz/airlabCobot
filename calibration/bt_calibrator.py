@@ -28,16 +28,14 @@ class Calibrator(py_trees.behaviour.Behaviour):
             x0 = np.array([0.0, 0.0])
             res_lsq = least_squares(calibrate, x0, args=(camera, cobot))
 
-            print(
-                f"x = {res_lsq.x[0]:.3f}, y = {res_lsq.x[1]:.3f}"
-            )
+
             return np.array([res_lsq.x[0], res_lsq.x[1]])
 
         return find_transformation(camera, cobot)
     def update(self) -> common.Status:
         if not self.clicked:
             return self.status.FAILURE
-        
+
         cobot, realsense = self.table.cobot, self.table.realsense
 
         # compute optimal transformation
@@ -49,6 +47,7 @@ class Calibrator(py_trees.behaviour.Behaviour):
 
         # show it to text box
         msg = f"x = {origin[0]:.3f}, y = {origin[1]:.3f}"
+        self.logger.info(msg)
         self.msgbox.setPlainText(msg)
 
         # plot them
