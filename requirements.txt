@@ -1,0 +1,4 @@
+pytrees
+pyqt6
+matplotlib
+scipy
