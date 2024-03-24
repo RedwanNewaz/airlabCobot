@@ -10,7 +10,7 @@ from queue import Queue
 import time
 import numpy as np
 import py_trees
-from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable
+from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, WriteTable
 
 class MainWindow(QMainWindow):
     def __init__(self, fig, ax):
@@ -44,6 +44,7 @@ class MainWindow(QMainWindow):
 
         # design Bt
         readTable = ReadTableData(self.tableWidget, self.checkBox.isChecked)
+        self.writeTable = WriteTable(self.tableWidget, self.input, self.calibrationText)
         self.loadTable = LoadTable(self.tableWidget)
         self.calib = Calibrator(ax, self.canvas, readTable, self.calibrationText)
         self.writer = WriteCalibration(readTable, self.calibrationText)
@@ -52,8 +53,11 @@ class MainWindow(QMainWindow):
         sel_calibrator = py_trees.composites.Selector(name="sel_calibrator", memory=True)
         sel_calibrator.add_children([self.calib, self.writer])
 
+        sel_table = py_trees.composites.Selector(name="sel_table", memory=True)
+        sel_table.add_children([readTable, self.writeTable])
+
         seq_calibrator = py_trees.composites.Sequence(name="seq_calibrator", memory=True)
-        seq_calibrator.add_children([readTable, sel_calibrator])
+        seq_calibrator.add_children([sel_table, sel_calibrator])
 
         self.root = py_trees.composites.Selector("RootSelector", True)
         self.root.add_children([self.loadTable, seq_calibrator])
@@ -72,6 +76,7 @@ class MainWindow(QMainWindow):
     def onWriteButtonClicked(self):
         self.calib.clicked = False
         self.writer.clicked = True
+        self.writeTable.clicked = True
         self.root.tick_once()
     def showTime(self):
         pass

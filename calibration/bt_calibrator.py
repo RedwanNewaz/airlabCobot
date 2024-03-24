@@ -48,6 +48,7 @@ class Calibrator(py_trees.behaviour.Behaviour):
 
 
         # plot them
+        self.ax.cla()
         self.ax.fill(cobot[:, 0], cobot[:, 1], 'y', alpha=0.4)
         self.ax.fill(realsense[:, 0], realsense[:, 1], 'b')
         self.ax.fill(transformedData[:, 0], transformedData[:, 1], 'r', alpha=0.4)
