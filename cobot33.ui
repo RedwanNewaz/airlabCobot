@@ -62,7 +62,7 @@
          <widget class="QComboBox" name="comboBox"/>
         </item>
         <item row="0" column="1">
-         <widget class="QPushButton" name="dockingButton">
+         <widget class="QPushButton" name="dropButton">
           <property name="maximumSize">
            <size>
             <width>100</width>
@@ -73,7 +73,7 @@
            <enum>Qt::RightToLeft</enum>
           </property>
           <property name="text">
-           <string>Docking</string>
+           <string>Drop</string>
           </property>
          </widget>
         </item>
@@ -105,7 +105,7 @@
          </widget>
         </item>
         <item row="0" column="0">
-         <widget class="QPushButton" name="resetButton">
+         <widget class="QPushButton" name="pickButton">
           <property name="maximumSize">
            <size>
             <width>100</width>
@@ -113,7 +113,7 @@
            </size>
           </property>
           <property name="text">
-           <string>Reset</string>
+           <string>Pick</string>
           </property>
          </widget>
         </item>
@@ -183,6 +183,8 @@
      <string>File</string>
     </property>
     <addaction name="actionload_calibration"/>
+    <addaction name="actionPick"/>
+    <addaction name="actiondock"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -190,6 +192,16 @@
   <action name="actionload_calibration">
    <property name="text">
     <string>load calibration</string>
+   </property>
+  </action>
+  <action name="actionPick">
+   <property name="text">
+    <string>reset</string>
+   </property>
+  </action>
+  <action name="actiondock">
+   <property name="text">
+    <string>dock</string>
    </property>
   </action>
  </widget>

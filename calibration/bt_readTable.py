@@ -10,11 +10,11 @@ class ReadTableData(py_trees.behaviour.Behaviour):
         super(ReadTableData, self).__init__('ReadTableData')
 
     def update(self) -> common.Status:
-        if not self.enabled():
-            # self.logger.error('[!] Calibration is not enabled')
+        rowCount = self.tableWidget.rowCount()
+        if not self.enabled() or rowCount < 1:
             return self.status.FAILURE
 
-        rowCount = self.tableWidget.rowCount()
+
         columnCount = self.tableWidget.columnCount()
 
         # read table widget
