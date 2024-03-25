@@ -3,10 +3,11 @@ from py_trees import common
 from PyQt6.QtWidgets import QTableWidgetItem
 
 class WriteTable(py_trees.behaviour.Behaviour):
-    def __init__(self, tableWidget, cobotInputTxt, camInputTxt):
+    def __init__(self, tableWidget, cobotInputTxt, camInputTxt, getRobotCoord):
         self.tableWidget = tableWidget
         self.cobotInputTxt = cobotInputTxt
         self.camInputTxt = camInputTxt
+        self.getRobotCoord = getRobotCoord
         self.data = []
         self.clicked = False
         super(WriteTable, self).__init__("write table")
@@ -30,9 +31,10 @@ class WriteTable(py_trees.behaviour.Behaviour):
         if not self.clicked:
             return self.status.FAILURE
         camText = self.camInputTxt.toPlainText()
-        robotText = self.cobotInputTxt.text()
+        robotText = self.getRobotCoord()
+        self.cobotInputTxt.setText(robotText)
 
-        if(self.isValidInput(camText) and self.isValidInput(robotText)):
+        if self.isValidInput(camText):
             self.data.append([robotText, camText])
             header = ['cobot', 'realsense']
             self.populate_table(self.data, header)

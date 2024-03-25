@@ -11,6 +11,9 @@ import time
 import numpy as np
 import py_trees
 from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, WriteTable
+from PoseEstimator import NodeManager
+
+from pymycobot import MyCobot
 
 class MainWindow(QMainWindow):
     def __init__(self, fig, ax):
@@ -19,19 +22,15 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("AiR L@b Cobot")
         self.ax = ax
 
-        # self.setLayout(self.viewer)
-
         self.canvas = FigureCanvasQTAgg(fig)
         self.viewer.addWidget(self.canvas)
 
         toolbar = NavigationToolbar2QT(self.canvas, self)
         self.viewer.addWidget(toolbar)
 
-        # self.moveButton.clicked.connect(self.onMoveButtonClicked)
-        # self.resetButton.clicked.connect(self.onResetButtonClicked)
+
         self.writeButton.clicked.connect(self.onWriteButtonClicked)
         self.calibrateButton.clicked.connect(self.onCalibrateButtonClicked)
-        # self.dockingButton.clicked.connect(self.onDockButtonClicked)
         self.actionload_calibration.triggered.connect(self.onLoadCalibrationActionClick)
 
 
@@ -44,7 +43,7 @@ class MainWindow(QMainWindow):
 
         # design Bt
         readTable = ReadTableData(self.tableWidget, self.checkBox.isChecked)
-        self.writeTable = WriteTable(self.tableWidget, self.input, self.calibrationText)
+        self.writeTable = WriteTable(self.tableWidget, self.input, self.calibrationText, self.getCobotCoords)
         self.loadTable = LoadTable(self.tableWidget)
         self.calib = Calibrator(ax, self.canvas, readTable, self.calibrationText)
         self.writer = WriteCalibration(readTable, self.calibrationText)
@@ -63,6 +62,20 @@ class MainWindow(QMainWindow):
         self.root.add_children([self.loadTable, seq_calibrator])
 
 
+        # add cobot functionalities
+        #TODO read port from config file
+        port = '/dev/ttyACM0'
+
+        self.mycobot = MyCobot(port, 115200)
+
+        self.actionReset.triggered.connect(self.onResetButtonClicked)
+        self.actionDock.triggered.connect(self.onDockButtonClicked)
+        self.moveButton.clicked.connect(self.onMoveButtonClicked)
+        self.pickButton.clicked.connect(self.onPickButtonClicked)
+        self.dropButton.clicked.connect(self.onDropButtonClicked)
+        self.terminated = False
+
+
     def onLoadCalibrationActionClick(self):
         self.loadTable.clicked = True
         self.root.tick_once()
@@ -79,7 +92,85 @@ class MainWindow(QMainWindow):
         self.writeTable.clicked = True
         self.root.tick_once()
     def showTime(self):
+        if self.checkBox.isChecked():
+            while not self.calibrationLine.empty():
+                text = self.calibrationLine.get()
+                self.calibrationText.setPlainText(text)
+
+    def onResetButtonClicked(self):
+        angles = [0, 0, 0, 0, 0, 0]
+        print('[+] resetting cobot')
+        self.mycobot.send_angles(angles, 70)
+
+    def onDockButtonClicked(self):
+        reset = [153.19, 137.81, -153.54, 156.79, 87.27, 13.62]
+        print("::set_free_mode()\n")
+        self.mycobot.send_angles(reset, 100)
+        time.sleep(5)
+        self.mycobot.release_all_servos()
+        print("docking success ...\n")
+
+    def move(self, coords):
+        if(len(coords) == 2):
+            coords.append(210.0)
+        # coords = [200.0, 200.0, 110.0, 0.0, -180.0, 2.51]
+        coords = [coords[0], coords[1], coords[2], 0.0, -180.0, 2.51]
+        self.mycobot.send_coords(coords, 70, 2)
+        print("::send_coords() ==> send coords {}, speed 70, mode 0\n".format(coords))
+
+    def onMoveButtonClicked(self):
+        # read from textbox
+        inputText = self.input.text()
+        if ',' not in inputText:
+            print('[-] invalid input!')
+            return
+
+        cmd = list(map(float, inputText.strip().split(',')))
+        if len(cmd) >= 2:
+            print(f'[+] move to {cmd}')
+            self.move(cmd)
+
+    def getCobotCoords(self):
+        coords = list(self.mycobot.get_coords())
+        return f"{coords[0]},{coords[1]}"
+
+    def onPickButtonClicked(self):
+        #TODO read this parameter from config file
+        coords = list(self.mycobot.get_coords())
+        print(f'current coord {coords}')
+        val = 100
+        coords[2] -= val # lower down
+        print(f'desire coord {coords}')
+        self.move(coords)
+        time.sleep(15)
+        coords[2] += val  # going back
+        self.move(coords)
+
+    def onDropButtonClicked(self):
         pass
+
+    def populate_table(self, data):
+        # Set the table dimensions and headers
+        self.tableWidget.setRowCount(len(data))  # Set number of rows
+        self.tableWidget.setColumnCount(2)  # Set number of columns
+        self.tableWidget.setHorizontalHeaderLabels(["Object", "Conf Score"])  # Set column headers
+
+        for i, row in enumerate(data):
+            for j, cell in enumerate(row):
+                item = QTableWidgetItem(str(cell))
+                self.tableWidget.setItem(i, j, item)
+
+                # update combo box
+                if j == 0:
+                    name = data[i][j]
+                    if name not in self.objNames:
+                        self.objNames.add(name)
+                        self.comboBox.addItem(name)
+
+    def closeEvent(self, event):
+        # do stuff
+        print('[+] closeEvent()')
+        self.terminated = True
 
 
 
@@ -92,5 +183,12 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     window = MainWindow(fig, ax)
+
+    model_path = "/home/airlab/Downloads/yolov8_realsense/yolov8_rs/yolov8m.pt"
+    poseNode = NodeManager(ax, window, model_path)
+    poseNode.start()
+
+
     window.show()
     sys.exit(app.exec())
+    poseNode.terminate = True

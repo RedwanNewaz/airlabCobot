@@ -2,3 +2,4 @@ py-trees
 pyqt6
 matplotlib
 scipy
+pymycobot

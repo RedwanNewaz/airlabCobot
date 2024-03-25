@@ -175,7 +175,7 @@
      <x>0</x>
      <y>0</y>
      <width>817</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -183,8 +183,8 @@
      <string>File</string>
     </property>
     <addaction name="actionload_calibration"/>
-    <addaction name="actionPick"/>
-    <addaction name="actiondock"/>
+    <addaction name="actionReset"/>
+    <addaction name="actionDock"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -194,12 +194,12 @@
     <string>load calibration</string>
    </property>
   </action>
-  <action name="actionPick">
+  <action name="actionReset">
    <property name="text">
     <string>reset</string>
    </property>
   </action>
-  <action name="actiondock">
+  <action name="actionDock">
    <property name="text">
     <string>dock</string>
    </property>

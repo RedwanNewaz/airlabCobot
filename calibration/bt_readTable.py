@@ -22,10 +22,11 @@ class ReadTableData(py_trees.behaviour.Behaviour):
         for row in range(rowCount):
             for column in range(columnCount):
                 item = self.tableWidget.item(row, column)
-                data = list(map(float, item.text().split(',')))
-                # print(row, column, data)
-                # where data = [x, y]
-                calibrationData[row][column] = data
+                if ',' in item.text():
+                    data = list(map(float, item.text().split(',')))
+                    # print(row, column, data)
+                    # where data = [x, y]
+                    calibrationData[row][column] = data
 
         # seperate data files
         calibrationData = np.array(calibrationData).T
