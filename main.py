@@ -111,7 +111,7 @@ class MainWindow(QMainWindow):
         reset = [153.19, 137.81, -153.54, 156.79, 87.27, 13.62]
         print("::set_free_mode()\n")
         self.mycobot.send_angles(reset, 100)
-        time.sleep(self.config['COBOT']['sleep'])
+        time.sleep(float(self.config['COBOT']['sleep']))
         self.mycobot.release_all_servos()
         print("docking success ...\n")
 
