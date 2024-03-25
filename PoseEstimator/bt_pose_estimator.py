@@ -5,9 +5,10 @@ import pyrealsense2 as rs
 
 
 class PoseEstimator(py_trees.behaviour.Behaviour):
-    def __init__(self, cam, detector):
+    def __init__(self, cam, detector, origin):
         self.cam = cam
         self.detector = detector
+        self.origin = origin
         super().__init__("PoseEstimator")
         self.pub = py_trees.blackboard.Client(name=self.name, namespace=self.name)
         self.pub.register_key(key="/%s/state" % self.name, access=py_trees.common.Access.WRITE)
@@ -20,7 +21,8 @@ class PoseEstimator(py_trees.behaviour.Behaviour):
         return depth_point
 
     def toRobotCoord(self, point):
-        origin = np.array([294.423, -362.489, 0.0])
+        # print(self.origin)
+        origin = np.array(self.origin)
         x = (point - origin)
         x[1] *= -1
         return x

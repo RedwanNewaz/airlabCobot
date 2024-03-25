@@ -14,13 +14,15 @@ from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, 
 from PoseEstimator import NodeManager
 
 from pymycobot import MyCobot
+import configparser
 
 class MainWindow(QMainWindow):
-    def __init__(self, fig, ax):
+    def __init__(self, fig, ax, config):
         super().__init__()
         uic.loadUi('cobot33.ui', self)
         self.setWindowTitle("AiR L@b Cobot")
         self.ax = ax
+        self.config = config
 
         self.canvas = FigureCanvasQTAgg(fig)
         self.viewer.addWidget(self.canvas)
@@ -64,7 +66,7 @@ class MainWindow(QMainWindow):
 
         # add cobot functionalities
         #TODO read port from config file
-        port = '/dev/ttyACM0'
+        port = self.config['COBOT']['port']
 
         self.mycobot = MyCobot(port, 115200)
 
@@ -109,13 +111,13 @@ class MainWindow(QMainWindow):
         reset = [153.19, 137.81, -153.54, 156.79, 87.27, 13.62]
         print("::set_free_mode()\n")
         self.mycobot.send_angles(reset, 100)
-        time.sleep(5)
+        time.sleep(self.config['COBOT']['sleep'])
         self.mycobot.release_all_servos()
         print("docking success ...\n")
 
     def move(self, coords):
         if(len(coords) == 2):
-            coords.append(210.0)
+            coords.append(float(self.config['COBOT']['altitude']))
         # coords = [200.0, 200.0, 110.0, 0.0, -180.0, 2.51]
         coords = [coords[0], coords[1], coords[2], 0.0, -180.0, 2.51]
         self.mycobot.send_coords(coords, 70, 2)
@@ -138,22 +140,32 @@ class MainWindow(QMainWindow):
         return f"{coords[0]},{coords[1]}"
 
     def onPickButtonClicked(self):
-        #TODO read this parameter from config file
+        #read this parameter from config file
         coords = list(self.mycobot.get_coords())
         print(f'current coord {coords}')
-        val = 100
+        val = float(self.config['COBOT']['down'])
         coords[2] -= val # lower down
         print(f'desire coord {coords}')
         self.move(coords)
-        self.mycobot.set_digital_output(2, 0)
-        self.mycobot.set_digital_output(5, 0)
-        time.sleep(15)
+        self.mycobot.set_basic_output(2, 0)
+        self.mycobot.set_basic_output(5, 0)
+        time.sleep(float(self.config['COBOT']['sleep']))
         coords[2] += val  # going back
         self.move(coords)
 
     def onDropButtonClicked(self):
-        self.mycobot.set_digital_output(2, 1)
-        self.mycobot.set_digital_output(5, 1)
+
+        coords = list(self.mycobot.get_coords())
+        print(f'current coord {coords}')
+        val = 100
+        coords[2] -= val  # lower down
+        print(f'desire coord {coords}')
+        self.move(coords)
+        time.sleep(float(self.config['COBOT']['sleep']))
+        self.mycobot.set_basic_output(2, 1)
+        self.mycobot.set_basic_output(5, 1)
+        coords[2] += val  # going back
+        self.move(coords)
 
     def populate_table(self, data):
         # Set the table dimensions and headers
@@ -182,19 +194,23 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
     fig = Figure()
     ax = fig.add_subplot()
     ax.axis('off')
     fig.tight_layout()
 
     app = QApplication(sys.argv)
-    window = MainWindow(fig, ax)
+    window = MainWindow(fig, ax, config)
 
-    model_path = "/home/airlab/Downloads/yolov8_realsense/yolov8_rs/yolov8m.pt"
-    poseNode = NodeManager(ax, window, model_path)
+    model_path = config['YOLO']['model_path']
+    poseNode = NodeManager(ax, window, model_path, config)
     poseNode.start()
 
 
     window.show()
     sys.exit(app.exec())
     poseNode.terminate = True
+

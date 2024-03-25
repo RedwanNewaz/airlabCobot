@@ -9,7 +9,7 @@ from .bt_pose_estimator import PoseEstimator
 from threading import Thread
 
 class NodeManager(Thread):
-    def __init__(self, ax, window, model_path):
+    def __init__(self, ax, window, model_path, config):
         Thread.__init__(self)
         self.window = window
         cam = Camera()
@@ -29,7 +29,9 @@ class NodeManager(Thread):
         selector_calibrator.add_children([seq_tracking, seq_calibrator])
 
         detector = Detector(cam, window.trackingBox.isChecked, model_path)
-        pose_estimator = PoseEstimator(cam, detector)
+        origin = config['REALSENSE']['origin']
+        origin = list(map(float, origin.split(',')))
+        pose_estimator = PoseEstimator(cam, detector, origin)
 
         seq_camera = py_trees.composites.Sequence(name="seq_camera", memory=True)
         seq_camera.add_children([cam, viewer, selector_calibrator])
