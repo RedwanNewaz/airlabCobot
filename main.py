@@ -68,6 +68,9 @@ class MainWindow(QMainWindow):
 
         self.mycobot = MyCobot(port, 115200)
 
+        self.mycobot.set_pin_mode(2, 1)
+        self.mycobot.set_pin_mode(5, 1)
+
         self.actionReset.triggered.connect(self.onResetButtonClicked)
         self.actionDock.triggered.connect(self.onDockButtonClicked)
         self.moveButton.clicked.connect(self.onMoveButtonClicked)
@@ -142,12 +145,15 @@ class MainWindow(QMainWindow):
         coords[2] -= val # lower down
         print(f'desire coord {coords}')
         self.move(coords)
+        self.mycobot.set_digital_output(2, 0)
+        self.mycobot.set_digital_output(5, 0)
         time.sleep(15)
         coords[2] += val  # going back
         self.move(coords)
 
     def onDropButtonClicked(self):
-        pass
+        self.mycobot.set_digital_output(2, 1)
+        self.mycobot.set_digital_output(5, 1)
 
     def populate_table(self, data):
         # Set the table dimensions and headers
