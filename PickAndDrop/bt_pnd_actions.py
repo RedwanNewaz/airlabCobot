@@ -26,6 +26,8 @@ class MoveToSrc(py_trees.behaviour.Behaviour):
             self.__thread = Thread(target=self.move)
             self.__thread.start()
             return self.status.RUNNING
+        elif self.robot.is_moving():
+            return self.status.RUNNING
         elif time.time() - self.__start_time < self.duration or not self.done:
             return self.status.RUNNING
         self.__start_time = None
@@ -52,6 +54,8 @@ class PickObject(py_trees.behaviour.Behaviour):
             self.logger.info(f"picking up object")
             self.__thread = Thread(target=self.pick)
             self.__thread.start()
+            return self.status.RUNNING
+        elif self.robot.is_moving():
             return self.status.RUNNING
         elif time.time() - self.__start_time < self.duration or not self.done:
             return self.status.RUNNING
@@ -82,6 +86,8 @@ class MoveToDelivery(py_trees.behaviour.Behaviour):
             self.__thread = Thread(target=self.move)
             self.__thread.start()
             return self.status.RUNNING
+        elif self.robot.is_moving():
+            return self.status.RUNNING
         elif time.time() - self.__start_time < self.duration or not self.done:
             return self.status.RUNNING
 
@@ -111,6 +117,8 @@ class PlaceObject(py_trees.behaviour.Behaviour):
             self.logger.info(f"dropping object")
             self.__thread = Thread(target=self.drop)
             self.__thread.start()
+            return self.status.RUNNING
+        elif self.robot.is_moving():
             return self.status.RUNNING
         elif time.time() - self.__start_time < self.duration or  not self.done:
             return self.status.RUNNING

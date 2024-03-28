@@ -71,7 +71,6 @@ class MainWindow(QMainWindow):
         self.actionDock.triggered.connect(self.robot.dock)
         # pick and drop bt
         self.objCoord = [0, 0]
-        self.robotCoord = [0, 0]
         grid_world = GridWorld()
         self.sim = SimPickDrop(ax, self.canvas, grid_world,  self.objCoord)
         self.root_pnd = py_trees.composites.Selector("RootPickNDrop", True)

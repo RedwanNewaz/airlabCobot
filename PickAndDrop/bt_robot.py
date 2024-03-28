@@ -17,6 +17,8 @@ class BTRobot:
         self.mycobot.send_coords(coords, 70, 2)
         print("::send_coords() ==> send coords {}, speed 70, mode 0\n".format(coords))
 
+    def is_moving(self):
+        return self.mycobot.is_moving()
     @property
     def getCoords(self):
         coords = list(self.mycobot.get_coords())
@@ -41,12 +43,13 @@ class BTRobot:
         val = float(self.config['COBOT']['down'])
         coords[2] -= val  # lower down
         print(f'desire coord {coords}')
-        # self.move(coords)
+        self.move(coords)
         self.mycobot.set_basic_output(2, 0)
         self.mycobot.set_basic_output(5, 0)
         time.sleep(float(self.config['COBOT']['sleep']))
         coords[2] += val  # going back
-        # self.move(coords)
+        self.move(coords)
+        time.sleep(float(self.config['COBOT']['sleep']))
 
     def drop(self):
         coords = list(self.mycobot.get_coords())
@@ -60,3 +63,4 @@ class BTRobot:
         self.mycobot.set_basic_output(5, 1)
         coords[2] += val  # going back
         # self.move(coords)
+        time.sleep(float(self.config['COBOT']['sleep']))
