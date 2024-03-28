@@ -29,7 +29,9 @@ class RobotAtSrcCondition(py_trees.behaviour.Behaviour):
         super().__init__(name)
 
     def update(self) -> common.Status:
+        self.logger.info(f"RobotAtSrcCondition {self.grid_world.deliveryCellCoord} | {self.robotCoord}, goal = {self.grid_world.getCellId(self.objCoord)} robot = {self.grid_world.getCellId(self.robotCoord)}")
         if self.grid_world.getCellId(self.objCoord) == self.grid_world.getCellId(self.robotCoord):
+            self.logger.info(f"RobotAtSrcCondition SUCCESS")
             return self.status.SUCCESS
         return self.status.FAILURE
 
@@ -40,6 +42,11 @@ class RobotAtDeliveryCondition(py_trees.behaviour.Behaviour):
         super().__init__(name)
 
     def update(self) -> common.Status:
+        self.logger.info(
+            f"RobotAtDeliveryCondition {self.robotCoord}, goal = {self.grid_world.deliveryCellIdx} robot = {self.grid_world.getCellId(self.robotCoord)}")
+
         if self.grid_world.deliveryCellIdx == self.grid_world.getCellId(self.robotCoord):
+            self.logger.info(f"Robot at delivery {self.robotCoord}")
+            self.logger.info(f"RobotAtDeliveryCondition SUCCESS")
             return self.status.SUCCESS
         return self.status.FAILURE

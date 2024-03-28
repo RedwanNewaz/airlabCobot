@@ -1,6 +1,7 @@
 from pymycobot import MyCobot
 import time
 from threading import Lock
+import numpy as np
 class BTRobot:
     def __init__(self, config):
         self.config = config
@@ -25,10 +26,21 @@ class BTRobot:
 
     def is_moving(self):
         return self.mycobot.is_moving()
+
+    @staticmethod
+    def toRobotCoord(point):
+        # origin = [294.423, -362.489]
+        origin = [0, 0]
+        # print(self.origin)
+        origin = np.array(origin)
+        x = (point - origin)
+        x[1] *= -1
+        return x
     @property
     def getCoords(self):
         coords = list(self.mycobot.get_coords())
-        return coords[:2]
+        xy = np.array([coords[0], coords[1]])
+        return xy
     def reset(self):
         angles = [0, 0, 0, 0, 0, 0]
         print('[+] resetting cobot')

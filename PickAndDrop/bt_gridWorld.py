@@ -9,12 +9,12 @@ class GridWorld(py_trees.behaviour.Behaviour):
         self.deliveryCellCoord = [-160, -160]
 
         self.precision = 100
-        self.gridResolution = 75
+        self.gridResolution = 100
         super(GridWorld, self).__init__("GridWorld")
 
 
     def loadData(self):
-        rawData = np.loadtxt(f'calibration2.csv', delimiter=',').astype('str')
+        rawData = np.loadtxt(f'calibration.csv', delimiter=',').astype('str')
         cobot_data = [",".join(r) for r in rawData[:, :2]]
         data = []
         for item in cobot_data:

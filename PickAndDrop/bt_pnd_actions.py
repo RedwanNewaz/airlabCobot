@@ -30,7 +30,7 @@ class MoveToSrc(py_trees.behaviour.Behaviour):
         elif time.time() - self.__start_time < self.duration or not self.done:
             return self.status.RUNNING
         self.__start_time = None
-        return self.status.SUCCESS
+        return self.status.FAILURE
 
 class PickObject(py_trees.behaviour.Behaviour):
     def __init__(self, robot, check_hand, name):
@@ -91,7 +91,7 @@ class MoveToDelivery(py_trees.behaviour.Behaviour):
         self.objCoord[0] = self.grid_world.deliveryCellCoord[0]
         self.objCoord[1] = self.grid_world.deliveryCellCoord[1]
         self.__start_time = None
-        return self.status.SUCCESS
+        return self.status.FAILURE
 
 class PlaceObject(py_trees.behaviour.Behaviour):
     def __init__(self, robot, check_hand, name):
@@ -121,4 +121,5 @@ class PlaceObject(py_trees.behaviour.Behaviour):
 
         self.check_hand._inHand = False
         self.__start_time = None
+        print(f"dropping object done")
         return self.status.SUCCESS

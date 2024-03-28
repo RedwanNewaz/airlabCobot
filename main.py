@@ -98,8 +98,9 @@ class MainWindow(QMainWindow):
         self.writeTable.clicked = True
         self.root_calibration.tick_once()
     def showTime(self):
-        while self.root_pnd.tick_once() == py_trees.common.Status.SUCCESS:
-            time.sleep(0.01)
+        self.root_pnd.tick_once()
+        # while self.root_pnd.tick_once() == py_trees.common.Status.SUCCESS:
+        #     time.sleep(0.01)
         # print(f"[+] Pick and Drop {self.root_pnd.tick_once()}")
 
 

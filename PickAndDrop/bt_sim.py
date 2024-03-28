@@ -13,13 +13,16 @@ class SimPickDrop(py_trees.behaviour.Behaviour):
         self.lastCellId = None
         self.__intialized = False
 
+
     def onclick(self, event):
         if event.inaxes:
             print('Mouse click at x={:.3f}, y={:.3f}'.format(event.xdata, event.ydata))
-            # self.query = [event.xdata, event.ydata]
-            self.query[0] = event.xdata
-            self.query[1] = event.ydata
+            # point = np.array([event.xdata, event.ydata])
+            xdata, ydata = event.xdata, event.ydata
+            self.query[0] = xdata
+            self.query[1] = ydata
             self.__intialized = True
+
 
 
     def plot(self, query):
