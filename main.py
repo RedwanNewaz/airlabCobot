@@ -11,7 +11,7 @@ import time
 import numpy as np
 import py_trees
 from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, WriteTable
-from PickAndDrop import GridWorld
+from PickAndDrop import GridWorld, SimPickDrop, get_pnd_subtree
 class MainWindow(QMainWindow):
     def __init__(self, fig, ax):
         super().__init__()
@@ -63,9 +63,15 @@ class MainWindow(QMainWindow):
         self.root_calibration.add_children([self.loadTable, seq_calibrator])
 
         # pick and drop bt
-        grid_world = GridWorld(ax, self.canvas)
+        self.objCoord = [0, 0]
+        self.robotCoord = [0, 0]
+        grid_world = GridWorld()
+        self.sim = SimPickDrop(ax, self.canvas, grid_world,  self.objCoord)
         self.root_pnd = py_trees.composites.Selector("RootPickNDrop", True)
-        self.root_pnd.add_children([grid_world])
+        sim_pnd = py_trees.composites.Sequence("sim_pnd", True)
+
+        sim_pnd.add_children([self.sim, get_pnd_subtree(self.robotCoord, self.objCoord, grid_world)])
+        self.root_pnd.add_children([grid_world, sim_pnd])
     def onLoadCalibrationActionClick(self):
         self.loadTable.clicked = True
         self.root_calibration.tick_once()

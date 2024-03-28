@@ -4,16 +4,14 @@ from py_trees import common
 import cv2
 
 class GridWorld(py_trees.behaviour.Behaviour):
-    def __init__(self, ax, canvas):
+    def __init__(self):
         self.__initialized = False
-        self.ax = ax
-        self.canvas = canvas
+        self.deliveryCellCoord = [160, -160]
+
         self.precision = 100
         self.gridResolution = 75
         super(GridWorld, self).__init__("GridWorld")
 
-        # Connect the mouse click event
-        self.canvas.mpl_connect('button_press_event', self.onclick)
 
     def loadData(self):
         rawData = np.loadtxt(f'calibration2.csv', delimiter=',').astype('str')
@@ -63,9 +61,10 @@ class GridWorld(py_trees.behaviour.Behaviour):
         return np.array(grid_cells).astype(float) / self.precision
 
     def getCellId(self, p):
-        if not isinstance(p, np.ndarray):
-            p = np.array(p)
-        relPos = self.grid_cells - p
+        q = p.copy()
+        if not isinstance(q, np.ndarray):
+            q = np.array(q)
+        relPos = self.grid_cells - q
         dist = np.linalg.norm(relPos, axis=1)
         idx = np.argmin(dist)
         return idx
@@ -75,23 +74,7 @@ class GridWorld(py_trees.behaviour.Behaviour):
         return self.grid_cells[idx]
 
     # Get mouse coordinates interactively
-    def onclick(self, event):
-        if event.inaxes:
-            print('Mouse click at x={}, y={}'.format(event.xdata, event.ydata))
-            query = [event.xdata, event.ydata]
-            self.plot(query)
 
-    def plot(self, query):
-        cellId = self.getCellId(query)
-        cellCoord = self.getCellCoord(cellId)
-
-        self.ax.cla()
-        self.ax.fill(self.workspace[:, 0], self.workspace[:, 1], 'y', alpha=0.4)
-        self.ax.scatter(self.grid_cells[:, 0], self.grid_cells[:, 1], c='k', s=10)
-        self.ax.plot(np.hstack((self.bbox[:, 0], self.bbox[0, 0])), np.hstack((self.bbox[:, 1], self.bbox[0, 1])))
-        self.ax.scatter(query[0], query[1], s=15)
-        self.ax.scatter(cellCoord[0], cellCoord[1], s=20, c='r')
-        self.canvas.draw()
     def update(self) -> common.Status:
         if self.__initialized:
             return self.status.FAILURE
@@ -101,4 +84,5 @@ class GridWorld(py_trees.behaviour.Behaviour):
         self.grid_cells = self.discretize_bbox_into_grid(self.bbox, self.gridResolution)
         self.logger.info(f'num grid cells {len(self.grid_cells)}')
         self.__initialized = True
+        self.deliveryCellIdx = self.getCellId(self.deliveryCellCoord)
         return self.status.SUCCESS
