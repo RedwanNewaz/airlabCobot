@@ -1,0 +1,104 @@
+import numpy as np
+import py_trees
+from py_trees import common
+import cv2
+
+class GridWorld(py_trees.behaviour.Behaviour):
+    def __init__(self, ax, canvas):
+        self.__initialized = False
+        self.ax = ax
+        self.canvas = canvas
+        self.precision = 100
+        self.gridResolution = 75
+        super(GridWorld, self).__init__("GridWorld")
+
+        # Connect the mouse click event
+        self.canvas.mpl_connect('button_press_event', self.onclick)
+
+    def loadData(self):
+        rawData = np.loadtxt(f'calibration2.csv', delimiter=',').astype('str')
+        cobot_data = [",".join(r) for r in rawData[:, :2]]
+        data = []
+        for item in cobot_data:
+            data.append(list(map(float, item.split(','))))
+
+        # realsense_data = [",".join(r) for r in rawData[:, 2:]]
+        return np.array(data)
+
+    def  min_rotated_box(self, workspace):
+        points = workspace.copy() * self.precision
+        points = points.astype(int)
+        # Compute minimum area bounding rectangle
+        rect = cv2.minAreaRect(points)
+
+        # Get the box points
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+        result = box.astype(float) / self.precision
+        return result
+
+    # Discretize bounding box into grid cells
+    def discretize_bbox_into_grid(self, raw_bbox, desire_resolution):
+        grid_resolution = desire_resolution * self.precision
+        bbox = raw_bbox * self.precision
+        bbox = bbox.astype(int)
+        # Determine min and max coordinates of bounding box
+        min_x = min(bbox[:, 0])
+        min_y = min(bbox[:, 1])
+        max_x = max(bbox[:, 0])
+        max_y = max(bbox[:, 1])
+
+        # Iterate over each grid cell
+        grid_cells = []
+        for y in range(min_y, max_y, grid_resolution):
+            for x in range(min_x, max_x, grid_resolution):
+                grid_cell_center = np.array([x + grid_resolution / 2, y + grid_resolution / 2], dtype=np.float32)
+                # Check if grid cell center is inside the bounding box
+                if cv2.pointPolygonTest(bbox, tuple(grid_cell_center), False) >= 0:
+                    # grid_cell = np.array([[x, y], [x + grid_resolution, y],
+                    #                       [x + grid_resolution, y + grid_resolution],
+                    #                       [x, y + grid_resolution]], dtype=np.int0)
+                    # grid_cells.append(grid_cell)
+                    grid_cells.append(grid_cell_center)
+        return np.array(grid_cells).astype(float) / self.precision
+
+    def getCellId(self, p):
+        if not isinstance(p, np.ndarray):
+            p = np.array(p)
+        relPos = self.grid_cells - p
+        dist = np.linalg.norm(relPos, axis=1)
+        idx = np.argmin(dist)
+        return idx
+
+    def getCellCoord(self, idx):
+        assert idx < len(self.grid_cells)
+        return self.grid_cells[idx]
+
+    # Get mouse coordinates interactively
+    def onclick(self, event):
+        if event.inaxes:
+            print('Mouse click at x={}, y={}'.format(event.xdata, event.ydata))
+            query = [event.xdata, event.ydata]
+            self.plot(query)
+
+    def plot(self, query):
+        cellId = self.getCellId(query)
+        cellCoord = self.getCellCoord(cellId)
+
+        self.ax.cla()
+        self.ax.fill(self.workspace[:, 0], self.workspace[:, 1], 'y', alpha=0.4)
+        self.ax.scatter(self.grid_cells[:, 0], self.grid_cells[:, 1], c='k', s=10)
+        self.ax.plot(np.hstack((self.bbox[:, 0], self.bbox[0, 0])), np.hstack((self.bbox[:, 1], self.bbox[0, 1])))
+        self.ax.scatter(query[0], query[1], s=15)
+        self.ax.scatter(cellCoord[0], cellCoord[1], s=20, c='r')
+        self.canvas.draw()
+    def update(self) -> common.Status:
+        if self.__initialized:
+            return self.status.FAILURE
+
+        self.workspace = self.loadData()
+        self.bbox = self.min_rotated_box(self.workspace)
+        self.grid_cells = self.discretize_bbox_into_grid(self.bbox, self.gridResolution)
+        self.logger.info(f'num grid cells {len(self.grid_cells)}')
+        self.__initialized = True
+        return self.status.SUCCESS

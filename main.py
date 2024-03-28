@@ -11,7 +11,7 @@ import time
 import numpy as np
 import py_trees
 from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, WriteTable
-
+from PickAndDrop import GridWorld
 class MainWindow(QMainWindow):
     def __init__(self, fig, ax):
         super().__init__()
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self.calib = Calibrator(ax, self.canvas, readTable, self.calibrationText)
         self.writer = WriteCalibration(readTable, self.calibrationText)
 
-
+        # calibration bt
         sel_calibrator = py_trees.composites.Selector(name="sel_calibrator", memory=True)
         sel_calibrator.add_children([self.calib, self.writer])
 
@@ -59,27 +59,30 @@ class MainWindow(QMainWindow):
         seq_calibrator = py_trees.composites.Sequence(name="seq_calibrator", memory=True)
         seq_calibrator.add_children([sel_table, sel_calibrator])
 
-        self.root = py_trees.composites.Selector("RootSelector", True)
-        self.root.add_children([self.loadTable, seq_calibrator])
+        self.root_calibration = py_trees.composites.Selector("RootSelector", True)
+        self.root_calibration.add_children([self.loadTable, seq_calibrator])
 
-
+        # pick and drop bt
+        grid_world = GridWorld(ax, self.canvas)
+        self.root_pnd = py_trees.composites.Selector("RootPickNDrop", True)
+        self.root_pnd.add_children([grid_world])
     def onLoadCalibrationActionClick(self):
         self.loadTable.clicked = True
-        self.root.tick_once()
+        self.root_calibration.tick_once()
 
     def onCalibrateButtonClicked(self):
         self.calib.clicked = True
         self.writer.clicked = False
-        self.root.tick_once()
+        self.root_calibration.tick_once()
 
 
     def onWriteButtonClicked(self):
         self.calib.clicked = False
         self.writer.clicked = True
         self.writeTable.clicked = True
-        self.root.tick_once()
+        self.root_calibration.tick_once()
     def showTime(self):
-        pass
+        self.root_pnd.tick_once()
 
 
 
