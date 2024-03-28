@@ -63,7 +63,7 @@ class GridWorld(py_trees.behaviour.Behaviour):
     def getCellId(self, p):
         q = p.copy()
         if not isinstance(q, np.ndarray):
-            q = np.array(q)
+            q = np.array(q)[:2]
         relPos = self.grid_cells - q
         dist = np.linalg.norm(relPos, axis=1)
         idx = np.argmin(dist)

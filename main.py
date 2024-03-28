@@ -7,11 +7,12 @@ from PyQt6.QtCore import QTimer
 import operator
 
 from queue import Queue
-import time
-import numpy as np
+import configparser
 import py_trees
 from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, WriteTable
-from PickAndDrop import GridWorld, SimPickDrop, get_pnd_subtree
+from PickAndDrop import GridWorld, SimPickDrop, get_pnd_subtree, BTRobot
+
+
 class MainWindow(QMainWindow):
     def __init__(self, fig, ax):
         super().__init__()
@@ -62,6 +63,12 @@ class MainWindow(QMainWindow):
         self.root_calibration = py_trees.composites.Selector("RootSelector", True)
         self.root_calibration.add_children([self.loadTable, seq_calibrator])
 
+        # robot configuration
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.robot = BTRobot(config)
+        self.actionReset.triggered.connect(self.robot.reset)
+        self.actionDock.triggered.connect(self.robot.dock)
         # pick and drop bt
         self.objCoord = [0, 0]
         self.robotCoord = [0, 0]
@@ -70,7 +77,9 @@ class MainWindow(QMainWindow):
         self.root_pnd = py_trees.composites.Selector("RootPickNDrop", True)
         sim_pnd = py_trees.composites.Sequence("sim_pnd", True)
 
-        sim_pnd.add_children([self.sim, get_pnd_subtree(self.robotCoord, self.objCoord, grid_world)])
+        self.dropButton.clicked.connect(self.robot.drop)
+
+        sim_pnd.add_children([self.sim, get_pnd_subtree(self.robot, self.objCoord, grid_world)])
         self.root_pnd.add_children([grid_world, sim_pnd])
     def onLoadCalibrationActionClick(self):
         self.loadTable.clicked = True
@@ -89,6 +98,8 @@ class MainWindow(QMainWindow):
         self.root_calibration.tick_once()
     def showTime(self):
         self.root_pnd.tick_once()
+
+
 
 
 

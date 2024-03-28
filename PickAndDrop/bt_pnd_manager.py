@@ -4,16 +4,16 @@ from .bt_pnd_actions import *
 '''
 followed https://github.com/ethz-asl/bt_fsm_comparison/blob/main/imgs/exp1_bt.svg
 '''
-def get_pnd_subtree(robotCoord, objCoord, grid_world):
+def get_pnd_subtree(robot, objCoord, grid_world):
     check_delivery = DeliveryCondition(objCoord, grid_world, "CheckDelivery")
     check_hand = HandCondition("CheckHand")
-    check_robot_at_src = RobotAtSrcCondition(robotCoord, objCoord, grid_world, "CheckRobotAtSrc")
-    check_robot_at_dst = RobotAtDeliveryCondition(robotCoord, grid_world, "CheckRobotAtDst")
+    check_robot_at_src = RobotAtSrcCondition(robot.getCoords, objCoord, grid_world, "CheckRobotAtSrc")
+    check_robot_at_dst = RobotAtDeliveryCondition(robot.getCoords, grid_world, "CheckRobotAtDst")
 
-    move_to_src = MoveToSrc(objCoord, "MoveToSrc")
-    pick_obj = PickObject(check_hand,  name="PickObject")
-    drop_obj = PlaceObject(check_hand, name="DropObject")
-    move_to_dst = MoveToDelivery(grid_world, objCoord, "MoveToDst")
+    move_to_src = MoveToSrc(robot, objCoord, "MoveToSrc")
+    pick_obj = PickObject(robot, check_hand,  name="PickObject")
+    drop_obj = PlaceObject(robot, check_hand, name="DropObject")
+    move_to_dst = MoveToDelivery(robot, grid_world, objCoord, "MoveToDst")
 
 
     fallback_move_src = py_trees.composites.Selector("fallback_move_src", True)
