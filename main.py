@@ -116,9 +116,14 @@ class MainWindow(QMainWindow):
         print("docking success ...\n")
 
     def move(self, coords):
+        def sign(x):
+            return -1.0 if x < 0 else 1.0
         if(len(coords) == 2):
             coords.append(float(self.config['COBOT']['altitude']))
         # coords = [200.0, 200.0, 110.0, 0.0, -180.0, 2.51]
+        coords[0] = sign(coords[0]) * min(200.0, abs(coords[0]))
+        coords[1] = sign(coords[1]) * min(200.0, abs(coords[1]))
+
         coords = [coords[0], coords[1], coords[2], 0.0, -180.0, 2.51]
         self.mycobot.send_coords(coords, 70, 2)
         print("::send_coords() ==> send coords {}, speed 70, mode 0\n".format(coords))
