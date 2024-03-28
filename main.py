@@ -4,13 +4,14 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationTool
 from matplotlib.figure import Figure
 from PyQt6 import uic
 from PyQt6.QtCore import QTimer
-import operator
+import time
 
 from queue import Queue
 import configparser
 import py_trees
 from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, WriteTable
 from PickAndDrop import GridWorld, SimPickDrop, get_pnd_subtree, BTRobot
+
 
 
 class MainWindow(QMainWindow):
@@ -66,6 +67,7 @@ class MainWindow(QMainWindow):
         # robot configuration
         config = configparser.ConfigParser()
         config.read('config.ini')
+
         self.robot = BTRobot(config)
         self.actionReset.triggered.connect(self.robot.reset)
         self.actionDock.triggered.connect(self.robot.dock)
@@ -96,7 +98,9 @@ class MainWindow(QMainWindow):
         self.writeTable.clicked = True
         self.root_calibration.tick_once()
     def showTime(self):
-        self.root_pnd.tick_once()
+        while self.root_pnd.tick_once() == py_trees.common.Status.SUCCESS:
+            time.sleep(0.01)
+        # print(f"[+] Pick and Drop {self.root_pnd.tick_once()}")
 
 
 

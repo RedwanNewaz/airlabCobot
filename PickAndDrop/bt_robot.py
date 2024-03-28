@@ -1,21 +1,27 @@
 from pymycobot import MyCobot
 import time
+from threading import Lock
 class BTRobot:
     def __init__(self, config):
         self.config = config
         port = self.config['COBOT']['port']
+
+        self.lock = Lock()
 
         self.mycobot = MyCobot(port, 115200)
         self.mycobot.set_pin_mode(2, 1)
         self.mycobot.set_pin_mode(5, 1)
 
     def move(self, coords):
+        # self.lock.acquire()
         if (len(coords) == 2):
             coords.append(float(self.config['COBOT']['altitude']))
         # coords = [200.0, 200.0, 110.0, 0.0, -180.0, 2.51]
         coords = [coords[0], coords[1], coords[2], 0.0, -180.0, 2.51]
         self.mycobot.send_coords(coords, 70, 2)
-        print("::send_coords() ==> send coords {}, speed 70, mode 0\n".format(coords))
+        time.sleep(float(self.config['COBOT']['sleep']))
+        # print("::send_coords() ==> send coords {}, speed 70, mode 0\n".format(coords))
+        # self.lock.release()
 
     def is_moving(self):
         return self.mycobot.is_moving()
@@ -37,30 +43,34 @@ class BTRobot:
         print("docking success ...\n")
 
     def pick(self):
+        self.lock.acquire()
         # read this parameter from config file
         coords = list(self.mycobot.get_coords())
-        print(f'current coord {coords}')
+        # print(f'current coord {coords}')
         val = float(self.config['COBOT']['down'])
         coords[2] -= val  # lower down
-        print(f'desire coord {coords}')
+        # print(f'desire coord {coords}')
         self.move(coords)
         self.mycobot.set_basic_output(2, 0)
         self.mycobot.set_basic_output(5, 0)
         time.sleep(float(self.config['COBOT']['sleep']))
         coords[2] += val  # going back
         self.move(coords)
-        time.sleep(float(self.config['COBOT']['sleep']))
+        # time.sleep(float(self.config['COBOT']['sleep']))
+        self.lock.release()
 
     def drop(self):
+        self.lock.acquire()
         coords = list(self.mycobot.get_coords())
-        print(f'current coord {coords}')
+        # print(f'current coord {coords}')
         val = 100
         coords[2] -= val  # lower down
-        print(f'desire coord {coords}')
-        # self.move(coords)
-        time.sleep(float(self.config['COBOT']['sleep']))
+        # print(f'desire coord {coords}')
+        self.move(coords)
+        # time.sleep(float(self.config['COBOT']['sleep']))
         self.mycobot.set_basic_output(2, 1)
         self.mycobot.set_basic_output(5, 1)
         coords[2] += val  # going back
-        # self.move(coords)
-        time.sleep(float(self.config['COBOT']['sleep']))
+        self.move(coords)
+        # time.sleep(float(self.config['COBOT']['sleep']))
+        self.lock.release()

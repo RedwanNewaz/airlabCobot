@@ -5,7 +5,7 @@ from threading import Thread
 class MoveToSrc(py_trees.behaviour.Behaviour):
     def __init__(self, robot, objCoord, name):
         self.objCoord = objCoord
-        self.duration = 2  # sec
+        self.duration = 3  # sec
         self.__start_time = None
         self.robot = robot
         self.done = True
@@ -23,8 +23,7 @@ class MoveToSrc(py_trees.behaviour.Behaviour):
         if self.__start_time is None and self.done:
             self.__start_time = time.time()
             self.logger.info(f"moving to src @ ({self.objCoord[0]:.3f}, {self.objCoord[1]:.3f})")
-            self.__thread = Thread(target=self.move)
-            self.__thread.start()
+            self.move()
             return self.status.RUNNING
         elif self.robot.is_moving():
             return self.status.RUNNING
@@ -37,7 +36,7 @@ class PickObject(py_trees.behaviour.Behaviour):
     def __init__(self, robot, check_hand, name):
         self.robot = robot
         self.check_hand = check_hand
-        self.duration = 2 # sec
+        self.duration = 3 # sec
         self.__start_time = None
 
         self.done = True
@@ -52,8 +51,7 @@ class PickObject(py_trees.behaviour.Behaviour):
         if self.__start_time is None and self.done:
             self.__start_time = time.time()
             self.logger.info(f"picking up object")
-            self.__thread = Thread(target=self.pick)
-            self.__thread.start()
+            self.pick()
             return self.status.RUNNING
         elif self.robot.is_moving():
             return self.status.RUNNING
@@ -68,7 +66,7 @@ class MoveToDelivery(py_trees.behaviour.Behaviour):
         self.robot = robot
         self.grid_world = grid_world
         self.objCoord = objCoord
-        self.duration = 2  # sec
+        self.duration = 3  # sec
         self.__start_time = None
         self.done = True
         super().__init__(name)
@@ -83,8 +81,7 @@ class MoveToDelivery(py_trees.behaviour.Behaviour):
         if self.__start_time is None and self.done:
             self.__start_time = time.time()
             self.logger.info(f"moving to {self.grid_world.deliveryCellCoord}")
-            self.__thread = Thread(target=self.move)
-            self.__thread.start()
+            self.move()
             return self.status.RUNNING
         elif self.robot.is_moving():
             return self.status.RUNNING
@@ -99,7 +96,7 @@ class MoveToDelivery(py_trees.behaviour.Behaviour):
 class PlaceObject(py_trees.behaviour.Behaviour):
     def __init__(self, robot, check_hand, name):
         self.robot = robot
-        self.duration = 2  # sec
+        self.duration = 3  # sec
         self.__start_time = None
         self.check_hand = check_hand
         self.done = True
@@ -115,8 +112,7 @@ class PlaceObject(py_trees.behaviour.Behaviour):
         if self.__start_time is None and self.done:
             self.__start_time = time.time()
             self.logger.info(f"dropping object")
-            self.__thread = Thread(target=self.drop)
-            self.__thread.start()
+            self.drop()
             return self.status.RUNNING
         elif self.robot.is_moving():
             return self.status.RUNNING

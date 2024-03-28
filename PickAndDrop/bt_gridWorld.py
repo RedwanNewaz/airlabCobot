@@ -6,7 +6,7 @@ import cv2
 class GridWorld(py_trees.behaviour.Behaviour):
     def __init__(self):
         self.__initialized = False
-        self.deliveryCellCoord = [160, -160]
+        self.deliveryCellCoord = [-160, -160]
 
         self.precision = 100
         self.gridResolution = 75
