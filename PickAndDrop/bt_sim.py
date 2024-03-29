@@ -19,15 +19,15 @@ class SimPickDrop(py_trees.behaviour.Behaviour):
             print('Mouse click at x={:.3f}, y={:.3f}'.format(event.xdata, event.ydata))
             # self.query = [event.xdata, event.ydata]
             if len(self.grid.objCoord) == 0:
+
+                # convert event data to grid data
+                cellID = self.grid.getCellId([event.xdata, event.ydata])
+                xdata, ydata = self.grid.getCellCoord(cellID)
                 print("[+] creating event data")
-                self.grid.objCoord.append(event.xdata)
-                self.grid.objCoord.append(event.ydata)
+                self.grid.objCoord.append(xdata)
+                self.grid.objCoord.append(ydata)
                 self.__intialized = True
                 self.plot(self.grid.objCoord)
-            elif len(self.grid.objCoord) == 2:
-                print("[+] updating event data")
-                self.grid.objCoord[0] = event.xdata
-                self.grid.objCoord[1] = event.ydata
             else:
                 print("[-] Failed to update event data")
 

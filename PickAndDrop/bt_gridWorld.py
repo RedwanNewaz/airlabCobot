@@ -4,12 +4,14 @@ from py_trees import common
 import cv2
 
 class GridWorld(py_trees.behaviour.Behaviour):
-    def __init__(self):
+    def __init__(self, config):
         self.__initialized = False
-        self.deliveryCellCoord = [160, -160]
+        self.deliveryCellCoord = list(map(float, config["GRID"]["deliveryCellCoord"].split(",")))
         self.objCoord = []
-        self.precision = 100
-        self.gridResolution = 75
+        self.precision = int(config["GRID"]["precision"])
+        self.gridResolution = int(config["GRID"]["resolution"])
+        self.offset_x = float(config["GRID"]["offsetX"])
+        self.offset_y = float(config["GRID"]["offsetY"])
         super(GridWorld, self).__init__("GridWorld")
 
 
@@ -37,6 +39,8 @@ class GridWorld(py_trees.behaviour.Behaviour):
 
     # Discretize bounding box into grid cells
     def discretize_bbox_into_grid(self, raw_bbox, desire_resolution):
+        def sign(x):
+            return -1.0 if x < 0 else 1.0
         grid_resolution = desire_resolution * self.precision
         bbox = raw_bbox * self.precision
         bbox = bbox.astype(int)
@@ -57,9 +61,14 @@ class GridWorld(py_trees.behaviour.Behaviour):
                     #                       [x + grid_resolution, y + grid_resolution],
                     #                       [x, y + grid_resolution]], dtype=np.int0)
                     # grid_cells.append(grid_cell)
-                    grid_cells.append(grid_cell_center)
-        return np.array(grid_cells).astype(float) / self.precision
 
+                    if abs(grid_cell_center[0] / self.precision) < self.offset_x or abs(grid_cell_center[1] / self.precision) < self.offset_y:
+                        continue
+
+                    grid_cells.append(grid_cell_center)
+        cells =  np.array(grid_cells).astype(float) / self.precision
+        cells = np.clip(cells, -200.0, 200.0)
+        return cells
     def getCellId(self, p):
         q = p.copy()
         if not isinstance(q, np.ndarray):

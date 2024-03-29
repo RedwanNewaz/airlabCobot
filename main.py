@@ -4,7 +4,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationTool
 from matplotlib.figure import Figure
 from PyQt6 import uic
 from PyQt6.QtCore import QTimer
-import operator
+import configparser
 
 from queue import Queue
 import time
@@ -64,8 +64,17 @@ class MainWindow(QMainWindow):
         self.root_calibration.add_children([self.loadTable, seq_calibrator])
 
         # pick and drop bt
-        self.robot = Robot()
-        grid_world = GridWorld()
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.robot = Robot(config)
+        self.actionReset.triggered.connect(self.robot.reset)
+        self.actionDock.triggered.connect(self.robot.dock)
+        self.pickButton.clicked.connect(self.robot.pick)
+        self.dropButton.clicked.connect(self.robot.drop)
+
+
+
+        grid_world = GridWorld(config)
         self.taskStatus = False
         self.sim = SimPickDrop(ax, self.canvas, grid_world)
         self.root_pnd = py_trees.composites.Selector("RootPickNDrop", True)
