@@ -2,24 +2,34 @@ import py_trees
 from py_trees import common
 import numpy as np
 class SimPickDrop(py_trees.behaviour.Behaviour):
-    def __init__(self, ax, canvas, grid, obj_coord):
+    def __init__(self, ax, canvas, grid):
         self.ax = ax
         self.canvas = canvas
+
         self.grid = grid
         # Connect the mouse click event
         self.canvas.mpl_connect('button_press_event', self.onclick)
         super(SimPickDrop, self).__init__("SimPickDrop")
-        self.query = obj_coord
         self.lastCellId = None
         self.__intialized = False
+
 
     def onclick(self, event):
         if event.inaxes:
             print('Mouse click at x={:.3f}, y={:.3f}'.format(event.xdata, event.ydata))
             # self.query = [event.xdata, event.ydata]
-            self.query[0] = event.xdata
-            self.query[1] = event.ydata
-            self.__intialized = True
+            if len(self.grid.objCoord) == 0:
+                print("[+] creating event data")
+                self.grid.objCoord.append(event.xdata)
+                self.grid.objCoord.append(event.ydata)
+                self.__intialized = True
+                self.plot(self.grid.objCoord)
+            elif len(self.grid.objCoord) == 2:
+                print("[+] updating event data")
+                self.grid.objCoord[0] = event.xdata
+                self.grid.objCoord[1] = event.ydata
+            else:
+                print("[-] Failed to update event data")
 
 
     def plot(self, query):
@@ -51,5 +61,5 @@ class SimPickDrop(py_trees.behaviour.Behaviour):
         self.canvas.draw()
 
     def update(self) -> common.Status:
-        self.plot(self.query)
+        self.plot(self.grid.objCoord)
         return self.status.SUCCESS if self.__intialized else self.status.FAILURE
