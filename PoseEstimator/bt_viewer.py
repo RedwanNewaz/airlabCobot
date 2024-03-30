@@ -44,5 +44,8 @@ class Viewer(py_trees.behaviour.Behaviour):
         if len(data) > 0:
             self.window.populate_table(data)
         # Refresh canvas
-        self.window.canvas.draw()
+        try:
+            self.window.canvas.draw()
+        except:
+            pass
         return self.status.SUCCESS
