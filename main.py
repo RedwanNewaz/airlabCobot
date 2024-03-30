@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
             pose = self.trackerPose.get()
 
             elspased = time.time() - self.__eventStart
-            if elspased > 20:
+            if elspased > float(config['REALSENSE']['task_delay']):
                 event = self.Event(xdata=pose[0], ydata=pose[1], inaxes=True)
                 self.controller.onclick(event)
                 self.__eventStart = time.time()
