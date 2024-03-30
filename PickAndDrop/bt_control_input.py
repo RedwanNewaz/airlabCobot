@@ -15,6 +15,8 @@ class ControlInput(py_trees.behaviour.Behaviour):
         self.__intialized = False
 
 
+
+
     def getGridCoord(self, point):
         idx = self.grid.getCellId(point)
         coord = self.grid.getCellCoord(idx)
@@ -35,8 +37,8 @@ class ControlInput(py_trees.behaviour.Behaviour):
                 print("[-] Failed to update event data")
         elif len(self.grid.objCoord) != 0:
             print("[!] Input Rejected")
-            self.ax.set_title("[!] Input Rejected")
-            self.canvas.draw()
+            # self.ax.set_title("[!] Input Rejected")
+            # self.canvas.draw()
 
     def __plt_background(self):
         radius = self.grid.offsetRadius - self.grid.gridResolution
@@ -48,28 +50,34 @@ class ControlInput(py_trees.behaviour.Behaviour):
         bbox = Rectangle(boxOrigin, boxWidth, boxHeight, fill=False, edgecolor='m', linewidth=2)
         self.ax.add_patch(circle)
         self.ax.add_patch(bbox)
+
+        if len(self.grid.objCoord) == 2:
+            self.ax.scatter(self.grid.objCoord[0], self.grid.objCoord[1], s=50, c='r')
+
         self.ax.axis('square')
+        self.ax.axis('off')
 
     def plot(self, query):
 
-        if len(query) != 2:
+        if len(query) != 2 and not self.__intialized:
             self.ax.cla()
             self.__plt_background()
             self.canvas.draw()
+            self.__intialized = True
             return
 
-        cellId = self.grid.getCellId(query)
-        if self.lastCellId is not None and self.lastCellId == cellId:
-            return
-        self.lastCellId = cellId
-        cellCoord = self.grid.getCellCoord(cellId)
+        # cellId = self.grid.getCellId(query)
+        # if self.lastCellId is not None and self.lastCellId == cellId:
+        #     return
+        # self.lastCellId = cellId
+        # cellCoord = self.grid.getCellCoord(cellId)
 
 
-        self.ax.cla()
-        self.__plt_background()
-        self.ax.scatter(query[0], query[1], s=35)
-        self.ax.scatter(cellCoord[0], cellCoord[1], s=50, c='r')
-        self.canvas.draw()
+        # self.ax.cla()
+        # self.__plt_background()
+        # self.ax.scatter(query[0], query[1], s=35)
+        # self.ax.scatter(cellCoord[0], cellCoord[1], s=50, c='r')
+        # self.canvas.draw()
 
     def update(self) -> common.Status:
         self.plot(self.grid.objCoord)

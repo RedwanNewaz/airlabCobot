@@ -12,9 +12,10 @@ import numpy as np
 import py_trees
 from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, WriteTable
 from PickAndDrop import GridWorld, ControlInput, get_pnd_subtree, Robot
-from threading import Thread
+from PoseEstimator import NodeManager
+from collections import namedtuple
 class MainWindow(QMainWindow):
-    def __init__(self, fig, ax):
+    def __init__(self, fig, ax, config):
         super().__init__()
         uic.loadUi('cobot33.ui', self)
         self.setWindowTitle("AiR L@b Cobot")
@@ -37,6 +38,7 @@ class MainWindow(QMainWindow):
 
 
         self.calibrationLine = Queue()
+        self.trackerPose = Queue()
         self.objNames = set()
 
         self.timer = QTimer()
@@ -64,25 +66,31 @@ class MainWindow(QMainWindow):
         self.root_calibration.add_children([self.loadTable, seq_calibrator])
 
         # pick and drop bt
-        config = configparser.ConfigParser()
-        config.read('config.ini')
+
         self.robot = Robot(config)
         self.actionReset.triggered.connect(self.robot.reset)
         self.actionDock.triggered.connect(self.robot.dock)
         self.pickButton.clicked.connect(self.robot.pick)
         self.dropButton.clicked.connect(self.robot.drop)
+        self.terminated = False
 
 
 
         grid_world = GridWorld(config["GRID"])
         self.taskStatus = False
-        self.sim = ControlInput(ax, self.canvas, grid_world)
+        self.controller = ControlInput(ax, self.canvas, grid_world)
         self.root_pnd = py_trees.composites.Selector("RootPickNDrop", True)
         sim_pnd = py_trees.composites.Sequence("sim_pnd", True)
 
         robotTree = get_pnd_subtree(self.robot, grid_world)
-        sim_pnd.add_children([self.sim, robotTree])
+        sim_pnd.add_children([self.controller, robotTree])
         self.root_pnd.add_children([grid_world, sim_pnd])
+        self.Event = namedtuple("event", "xdata ydata inaxes")
+        self.__eventStart = time.time()
+    def closeEvent(self, event):
+        # do stuff
+        print('[+] closeEvent()')
+        self.terminated = True
 
     def onLoadCalibrationActionClick(self):
         self.loadTable.clicked = True
@@ -100,20 +108,61 @@ class MainWindow(QMainWindow):
         self.writeTable.clicked = True
         self.root_calibration.tick_once()
     def showTime(self):
+        while not self.trackerPose.empty():
+            pose = self.trackerPose.get()
+
+            elspased = time.time() - self.__eventStart
+            if elspased > 20:
+                event = self.Event(xdata=pose[0], ydata=pose[1], inaxes=True)
+                self.controller.onclick(event)
+                self.__eventStart = time.time()
+
+                print('[+] trackerPose:', pose)
         self.root_pnd.tick_once()
-        # for item in self.root_pnd.tick():
-        #     print('[..] bt tick ', item)
+
+    def populate_table(self, data):
+        # Set the table dimensions and headers
+        self.tableWidget.setRowCount(len(data))  # Set number of rows
+        self.tableWidget.setColumnCount(2)  # Set number of columns
+        self.tableWidget.setHorizontalHeaderLabels(["Object", "Conf Score"])  # Set column headers
+
+        for i, row in enumerate(data):
+            for j, cell in enumerate(row):
+                item = QTableWidgetItem(str(cell))
+                self.tableWidget.setItem(i, j, item)
+
+                # update combo box
+                if j == 0:
+                    name = data[i][j]
+                    if name not in self.objNames:
+                        self.objNames.add(name)
+                        self.comboBox.addItem(name)
 
 
 
 
 if __name__ == '__main__':
     fig = Figure()
-    ax = fig.add_subplot()
-    ax.axis('off')
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    # ax1, ax2 = fig.add_subplot(1, 2)
+
+
+    ax1.axis('off')
+    ax2.axis('off')
+
     fig.tight_layout()
 
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
     app = QApplication(sys.argv)
-    window = MainWindow(fig, ax)
+    window = MainWindow(fig, ax2, config)
+
+    # start realsense thread
+    model_path = config['YOLO']['model_path']
+    poseNode = NodeManager(ax1, window, model_path, config)
+    poseNode.start()
+
     window.show()
     sys.exit(app.exec())
