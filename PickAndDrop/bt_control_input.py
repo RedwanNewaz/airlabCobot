@@ -29,8 +29,8 @@ class ControlInput(py_trees.behaviour.Behaviour):
                 gridCoord = self.getGridCoord([event.xdata, event.ydata])
                 self.grid.objCoord.append(gridCoord[0])
                 self.grid.objCoord.append(gridCoord[1])
-                self.__intialized = True
-                self.plot(self.grid.objCoord)
+                self.ax.cla()
+                self.__plt_background()
                 self.ax.set_title("[Task] Pick Obj ({:.2f}, {:.2f})".format(event.xdata, event.ydata))
                 self.canvas.draw()
             else:
@@ -66,18 +66,6 @@ class ControlInput(py_trees.behaviour.Behaviour):
             self.__intialized = True
             return
 
-        # cellId = self.grid.getCellId(query)
-        # if self.lastCellId is not None and self.lastCellId == cellId:
-        #     return
-        # self.lastCellId = cellId
-        # cellCoord = self.grid.getCellCoord(cellId)
-
-
-        # self.ax.cla()
-        # self.__plt_background()
-        # self.ax.scatter(query[0], query[1], s=35)
-        # self.ax.scatter(cellCoord[0], cellCoord[1], s=50, c='r')
-        # self.canvas.draw()
 
     def update(self) -> common.Status:
         self.plot(self.grid.objCoord)

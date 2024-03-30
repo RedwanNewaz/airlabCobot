@@ -45,7 +45,7 @@ class Tracking(py_trees.behaviour.Behaviour):
             desireObj = self.window.comboBox.currentText()
             if len(desireObj) > 0 and desireObj in line:
                 coords = list(map(float, msg[1:]))
-                self.logger.info( "move to " + line)
+                # self.logger.info( "move to " + line)
                 self.window.trackerPose.put(coords)
 
         return self.status.SUCCESS
