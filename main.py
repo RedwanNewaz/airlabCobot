@@ -11,7 +11,7 @@ import time
 import numpy as np
 import py_trees
 from calibration import Calibrator, ReadTableData, WriteCalibration, LoadTable, WriteTable
-from PickAndDrop import GridWorld, SimPickDrop, get_pnd_subtree, Robot
+from PickAndDrop import GridWorld, ControlInput, get_pnd_subtree, Robot
 from threading import Thread
 class MainWindow(QMainWindow):
     def __init__(self, fig, ax):
@@ -74,9 +74,9 @@ class MainWindow(QMainWindow):
 
 
 
-        grid_world = GridWorld(config)
+        grid_world = GridWorld(config["GRID"])
         self.taskStatus = False
-        self.sim = SimPickDrop(ax, self.canvas, grid_world)
+        self.sim = ControlInput(ax, self.canvas, grid_world)
         self.root_pnd = py_trees.composites.Selector("RootPickNDrop", True)
         sim_pnd = py_trees.composites.Sequence("sim_pnd", True)
 
