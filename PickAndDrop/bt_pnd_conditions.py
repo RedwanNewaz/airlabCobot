@@ -39,6 +39,8 @@ class RobotAtSrcCondition(py_trees.behaviour.Behaviour):
         self.robot = robot
         self.grid_world = grid_world
         self.objCoord = objCoord
+        self.__count = 0
+        self.__repeat = 0
         super().__init__(name)
 
     def update(self) -> common.Status:
@@ -48,12 +50,22 @@ class RobotAtSrcCondition(py_trees.behaviour.Behaviour):
         #
         #     self.robot._pick = False
         #     return self.status.FAILURE
-
+        self.__count += 1
         if self.robot.done:
-            self.logger.info(f"[+] robot reach at src {self.robot.done}")
+            self.logger.info(f"[+] robot reach at src {self.robot.done} | total count {self.__count}")
             self.robot.done = False
+            self.__count = 0
             return self.status.SUCCESS
-        return self.status.FAILURE
+        self.logger.info(f"[+] move tick {self.__count} ")
+        if self.__count > 100:
+            self.logger.error(f"[+] robot stuck ")
+            self.grid_world.objCoord = []
+            self.__count = 0
+            self.robot.done = True
+            self.robot._pick = False
+            return self.status.FAILURE
+
+        return self.status.RUNNING
 class RobotAtDeliveryCondition(py_trees.behaviour.Behaviour):
     def __init__(self,robot, objCoord, grid_world, name):
         self.objCoord = objCoord

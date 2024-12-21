@@ -8,30 +8,19 @@ class MoveToSrc(py_trees.behaviour.Behaviour):
         self.robot = robot
         self.objCoord = objCoord
         self.__start_time = None
-
         super().__init__(name)
 
 
     def update(self) -> common.Status:
 
-        # if len(self.objCoord) != 2:
-        #     self.__start_time = None
-        #     # self.logger.info(f"[Finish] moving to src")
-        #     return self.status.FAILURE
 
-        # elif self.__start_time is None:
-        #     self.robot.setPoint = self.objCoord.copy()
-        #
-        #     if self.robot.task_move():
-        #         self.logger.info(f"[Start] moving to src @ ({self.objCoord[0]:.3f}, {self.objCoord[1]:.3f})")
-        #         self.__start_time = time.time()
-        #     return self.status.RUNNING
         if not self.robot.done:
             self.robot.setPoint = self.objCoord.copy()
             if self.robot.task_move():
                 self.logger.info(f"[Start] moving to src @ ({self.objCoord[0]:.3f}, {self.objCoord[1]:.3f})")
                 self.__start_time = time.time()
-            return self.status.RUNNING
+
+            # return self.status.RUNNING
 
         return self.status.SUCCESS
 

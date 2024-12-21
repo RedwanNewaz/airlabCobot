@@ -35,8 +35,11 @@ class Robot:
             coords.append(float(self.config['COBOT']['altitude']))
             # coords = [200.0, 200.0, 110.0, 0.0, -180.0, 2.51]
         coords = [coords[0], coords[1], coords[2], 0.0, -180.0, 2.51]
-        self.mycobot.send_coords(coords, 70, 2)
+        self.mycobot.send_coords(coords, 70, 1)
         sleep(float(self.nap_time))
+        code = self.mycobot.is_in_position(coords, 1)
+        print(f"code {code}")
+        self.done = (code == 1)
 
     def move(self, coords):
         if not self.__mutex.locked():
@@ -44,12 +47,12 @@ class Robot:
                 # print(f"[+] moving towards {coords}")
                 self.__move(coords)
                 print("[+] move task completed")
-                self.done = True
+
         else:
             # print(f"[+] moving towards {coords}")
             self.__move(coords)
             # print("[+] move task completed")
-            self.done = True
+
 
 
 

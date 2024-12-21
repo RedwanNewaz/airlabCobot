@@ -18,11 +18,11 @@ def get_pnd_subtree(robot, grid_world):
 
 
 
-    fallback_move_src = py_trees.composites.Selector("fallback_move_src", False)
-    fallback_move_src.add_children([check_robot_at_src, move_to_src])
+    seq_move_src = py_trees.composites.Sequence("seq_move_src", False)
+    seq_move_src.add_children([move_to_src, check_robot_at_src])
 
     sequence_pick_obj = py_trees.composites.Sequence("sequence_pick_obj", False)
-    sequence_pick_obj.add_children([fallback_move_src, pick_obj])
+    sequence_pick_obj.add_children([seq_move_src, pick_obj])
 
     fallback_hand_condition = py_trees.composites.Selector("fallback_hand_condition", False)
     fallback_hand_condition.add_children([check_hand, sequence_pick_obj])
